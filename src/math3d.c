@@ -139,12 +139,21 @@ mat4 mat4_frustum_asymmetric(float left, float right, float bottom, float top, f
 
 vec3 mat4_apply_to_vec3(mat4 m, vec3 v) {
     float x = v.x, y = v.y, z = v.z;
+
+    // Corrected w computation using the last column (not row)
     float w = m.m[3]*x + m.m[7]*y + m.m[11]*z + m.m[15];
+
+    // Avoid division by zero
+    if (w == 0.0f) {
+        // Return something safe (e.g., center of screen)
+        return (vec3){0, 0, 0, 1};  // or some sentinel value
+    }
 
     vec3 result = {
         .x = (m.m[0]*x + m.m[4]*y + m.m[8]*z + m.m[12]) / w,
         .y = (m.m[1]*x + m.m[5]*y + m.m[9]*z + m.m[13]) / w,
-        .z = (m.m[2]*x + m.m[6]*y + m.m[10]*z + m.m[14]) / w
+        .z = (m.m[2]*x + m.m[6]*y + m.m[10]*z + m.m[14]) / w,
+        .is_cartesian = 1
     };
     return result;
 }
