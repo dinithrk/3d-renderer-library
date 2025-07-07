@@ -1,31 +1,37 @@
-# Makefile for compiling, running, and converting frames
-
-# Variables
+# Compiler and flags
 CC = gcc
 CFLAGS = -Iinclude -lm
-SRC = demo/main.c src/renderer.c src/canvas.c src/math3d.c
-OBJ = renderer
-GIF_OUTPUT = soccer_ball.gif
-PPM_FILES = frame_*.ppm
 
-# Targets
-all: $(OBJ) run convert clean
+# Sources
+COMMON_SRCS = src/canvas.c src/math3d.c
+LIGHT_SRCS = demo/animation.c src/lightsource_renderer.c src/lightning.c $(COMMON_SRCS)
+SOCCER_SRCS = demo/main.c src/renderer.c $(COMMON_SRCS)
+CLOCK_SRCS = demo/clock_lines.c src/canvas.c
 
-# Compile the code
-$(OBJ): $(SRC)
-	$(CC) $(SRC) $(CFLAGS) -o $(OBJ)
+# Output binaries
+BIN = renderer
 
-# Run the renderer
-run: $(OBJ)
-	./$(OBJ)
+.PHONY: all light_source soccerball clock_lines clean
 
-# Convert ppm files to gif
-convert: $(OBJ)
-	convert -delay 7 -loop 0 $(PPM_FILES) -resize 800x800 $(GIF_OUTPUT)
+all: light_source soccerball clock_lines
 
-# Clean up generated ppm files
+light_source:
+	gcc $(LIGHT_SRCS) -Iinclude -lm -o $(BIN)
+	./$(BIN)
+	convert -delay 7 -loop 0 frame_*.ppm -resize 800x800 light_source.gif
+	rm -f frame_*.ppm $(BIN)
+
+soccerball:
+	gcc $(SOCCER_SRCS) -Iinclude -lm -o $(BIN)
+	./$(BIN)
+	convert -delay 7 -loop 0 frame_*.ppm -resize 800x800 soccerball.gif
+	rm -f frame_*.ppm $(BIN)
+
+clock_lines:
+	gcc $(CLOCK_SRCS) -Iinclude -lm -o $(BIN)
+	./$(BIN)
+	convert clock_lines.ppm -quality 100 clock_lines.jpg
+	rm -f clock_lines.ppm $(BIN)
+
 clean:
-	rm -f $(PPM_FILES)
-	rm -f $(OBJ)
-
-.PHONY: all run convert clean
+	rm -f *.o frame_*.ppm renderer

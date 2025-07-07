@@ -4,7 +4,7 @@
 #include <string.h>
 #include "canvas.h"
 #include "math3d.h"
-//#include "lightning.h"
+#include "lightning.h"
 
 int SCREEN_WIDTH = 800;
 int SCREEN_HEIGHT = 800;
@@ -12,7 +12,7 @@ int SCREEN_HEIGHT = 800;
 #define VERTEX_COUNT 60
 #define EDGE_COUNT 90
 
-#define FRAME_COUNT 120
+#define FRAME_COUNT 130
 #define DELTA_T 0.08f
 #define ROT_SPEED 1.0f
 
@@ -77,10 +77,59 @@ static const int ico_edges[90][2] = {
 };
 
 
+static const vec3 tetra_vertices[4] = {
+    {.x =  0.0f,  .y =  4.0f,  .z =  4.0f,  .is_cartesian = 1}, // 0
+    {.x = -8.0f,  .y = -4.0f,  .z =  4.0f,  .is_cartesian = 1}, // 1
+    {.x = -8.0f,  .y =  4.0f,  .z = -4.0f,  .is_cartesian = 1}, // 2
+    {.x =  0.0f,  .y = -4.0f,  .z = -4.0f,  .is_cartesian = 1}  // 3
+};
+
+
+
+// Edges for the tetrahedron
+static const int tetra_edges[6][2] = {
+    {0, 1}, {0, 2}, {0, 3},
+    {1, 2}, {1, 3}, {2, 3}
+};
+
+
+
+
+
+static const vec3 octa_vertices[6] = {
+    {.x = 10.0f,  .y =  0.0f,  .z =  0.0f,  .is_cartesian = 1}, // 0 - Right
+    {.x = -2.0f,  .y =  0.0f,  .z =  0.0f,  .is_cartesian = 1}, // 1 - Left
+    {.x =  4.0f,  .y =  6.0f,  .z =  0.0f,  .is_cartesian = 1}, // 2 - Top
+    {.x =  4.0f,  .y = -6.0f,  .z =  0.0f,  .is_cartesian = 1}, // 3 - Bottom
+    {.x =  4.0f,  .y =  0.0f,  .z =  6.0f,  .is_cartesian = 1}, // 4 - Front
+    {.x =  4.0f,  .y =  0.0f,  .z = -6.0f,  .is_cartesian = 1}  // 5 - Back
+};
+
+
+// Edges for the octahedron
+static const int octa_edges[12][2] = {
+    {0, 2}, {0, 3}, {0, 4}, {0, 5}, // Right vertex connections
+    {1, 2}, {1, 3}, {1, 4}, {1, 5}, // Left vertex connections
+    {2, 4}, {2, 5}, // Top connections
+    {3, 4}, {3, 5}  // Bottom connections
+};
+
+
+
 int main() {
     canvas_t* canvas = create_canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    vec3 vertices[VERTEX_COUNT];
+    // vec3 tetralan_vertices[4];
+    // for (int i = 0; i < 4; i++) {
+    //     tetralan_vertices[i] = vec3_normalize_fast(tetra_vertices[i]);
+    // }
+
+    // vec3 octalan_vertices[6];
+    // for (int i = 0; i < 6; i++) {
+    //     octalan_vertices[i] = vec3_normalize_fast(octa_vertices[i]);
+    // }
+
+     vec3 vertices[VERTEX_COUNT];
     for (int i = 0; i < VERTEX_COUNT; i++) {
         vertices[i] = vec3_normalize_fast(ico_vertices[i]);
     }
@@ -95,23 +144,33 @@ int main() {
 
     printf("This may take while...\n");
     for (int frame = 0; frame < FRAME_COUNT; frame++) {
+
+
+        if(frame = FRAME_COUNT/2){
+            printf("Halfway done...\n");
+        }
+
+
+
         float t = frame * DELTA_T;
         float slerp_t = (sinf(t * ROT_SPEED * 0.5f) * 0.5f) + 0.5f;
         vec3 axis = vec3_slerp(axis_start, axis_end, slerp_t);
 
         mat4 local = mat4_identity();
        
-        mat4 rotate = mat4_rotate_xyz(axis.x * t * ROT_SPEED,
-                              axis.y * t * ROT_SPEED,
-                              axis.z * t * ROT_SPEED);
+        // mat4 rotate = mat4_rotate_xyz(axis.x * t * ROT_SPEED,
+        //                       axis.y * t * ROT_SPEED,
+        //                       axis.z * t * ROT_SPEED);
+
+        mat4 rotate = mat4_rotate_xyz(0,axis.y * t * ROT_SPEED,0);
 
         
         //curvy translation
         float x = 0 + 0.7 *(1 - cosf(t * ROT_SPEED));
-        float y = 0 + 0.7 *(1- sinf(t * ROT_SPEED));
+        float z = 0 + 0.7 *(1- sinf(t * ROT_SPEED));
 
         //translation
-        mat4 translate = mat4_translate(x, y, .0f);
+        mat4 translate = mat4_translate(x, .0f, z);
 
         //the total changes
         mat4 world = mat4_mul( rotate, translate);
@@ -120,6 +179,18 @@ int main() {
         render_wireframe(canvas, vertices, VERTEX_COUNT,
                  (int (*)[2])ico_edges, EDGE_COUNT,
                  local, world, camera, projection);
+
+
+        // render_wireframe(canvas, tetralan_vertices, 4,
+        //          (int (*)[2])tetra_edges, 6,
+        //          local, world, camera, projection);
+
+        // render_wireframe(canvas, octalan_vertices, 6,
+        //          (int (*)[2])octa_edges, 8,
+        //          local, world, camera, projection);
+
+
+        //endpoint of drawing         
 
         // Debug: Count bright pixels in the frame
         int bright_pixels = 0;
@@ -133,7 +204,7 @@ int main() {
         //printf("Frame %d: Bright pixels = %d\n", frame, bright_pixels);
 
         //saving framers to a ppm
-        char filename[124];
+        char filename[134];
         sprintf(filename, "frame_%03d.ppm", frame);
         save_canvas_ppm(canvas, filename);
 
