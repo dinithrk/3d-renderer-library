@@ -22,7 +22,7 @@ int main() {
         float y = center + radius * sinf(angle * PI / 180);
         //ending points of the lines
 
-        draw_line_f(canvas, center, center, x, y, 1.5);
+        draw_line_f(canvas, center, center, x, y, 1.5,0.75);
     }
 
     save_canvas_ppm(canvas, "clock_lines.ppm");
