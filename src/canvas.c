@@ -25,6 +25,16 @@ void clear_canvas(canvas_t* canvas) {
 }
 
 
+
+float intensityI = 0.75f;
+
+// void changeIntensity(float i){
+//     intensityI = i;
+//     //0.45 to 0.85
+// }
+
+
+
 //function to colourup the pixels 
 void set_pixel_f(canvas_t* canvas, float x, float y, float intensity) {
     int x0 = (int)floorf(x);
@@ -32,7 +42,7 @@ void set_pixel_f(canvas_t* canvas, float x, float y, float intensity) {
     float dx = x - x0;
     float dy = y - y0;
 
-    float smoothness = 0.15;
+    float smoothness = 0.05;
     //smoothness factor
 
     //bound checking and pixel colouring
@@ -61,8 +71,9 @@ void set_pixel_f(canvas_t* canvas, float x, float y, float intensity) {
 }
 
 
+
 //function to draw lines by using a starting and end point cordinates
-void draw_line_f(canvas_t* canvas, float x0, float y0, float x1, float y1, float thickness) {
+void draw_line_f(canvas_t* canvas, float x0, float y0, float x1, float y1, float thickness, float brightness) {
     float x_length = x1 - x0;
     float y_length = y1 - y0;
 
@@ -78,7 +89,7 @@ void draw_line_f(canvas_t* canvas, float x0, float y0, float x1, float y1, float
         for (float dy = -thickness / 2; dy <= thickness / 2; dy++) {
             for (float dx = -thickness / 2; dx <= thickness / 2; dx++) {
                 if (dx * dx + dy * dy <= (thickness / 2) * (thickness / 2)) {
-                    set_pixel_f(canvas, x + dx, y + dy, 0.75);
+                    set_pixel_f(canvas, x + dx, y + dy, brightness);
                     //intensity 0.75 for smoothness
                 }
             }
